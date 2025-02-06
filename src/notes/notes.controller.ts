@@ -18,6 +18,7 @@ import {
   NoteHttpResDto,
   NotesPaginatedHttpResDto,
 } from './dto/note.http.res.dto';
+import { Roles, RolesType } from '@commons/decorators/roles.decorator';
 
 @Controller('notes')
 export class NotesController {
@@ -57,6 +58,7 @@ export class NotesController {
   }
 
   @Delete(':id')
+  @Roles(RolesType.Admin)
   @ResponseDTO(NoteHttpResDto)
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.notesService.remove(id);

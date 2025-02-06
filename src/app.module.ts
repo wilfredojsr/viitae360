@@ -12,6 +12,8 @@ import { LoggerInterceptor } from '@commons/interceptors/logger.interceptor';
 import { AuthGuard } from '@commons/guards/auth.guard';
 import { BearerTokenGuard } from '@commons/guards/bearer-token.guard';
 import { NotesModule } from './notes/notes.module';
+import { RoleGuard } from '@commons/guards/role.guard';
+import { RoleAdminGuard } from '@commons/guards/role-admin.guard';
 
 @Module({
   imports: [
@@ -42,7 +44,12 @@ import { NotesModule } from './notes/notes.module';
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
+    {
+      provide: APP_GUARD,
+      useClass: RoleGuard,
+    },
     BearerTokenGuard,
+    RoleAdminGuard,
   ],
 })
 export class AppModule {}

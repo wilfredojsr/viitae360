@@ -3,11 +3,13 @@ import {
   Inject,
   Injectable,
   Logger,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AuthLoginHttpReqDto } from './auth.http.req.dto';
+import { AuthLoginHttpReqDto } from './dto/auth.http.req.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { UserEntity } from '@auth/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -21,20 +23,37 @@ export class AuthService {
   ) {}
 
   async login(dto: AuthLoginHttpReqDto) {
-    const whiteList: string = this.configService.get('WHITELIST_AUTH');
     const password = this.configService.get('WHITELIST_PASSWORD');
 
-    const usersAllowed = whiteList
-      .split(',')
-      .filter((str) => str.includes('@'));
+    const { index } = this.findUserByEmail(dto.email);
 
-    const userIndex = usersAllowed.findIndex((user) => user === dto.email);
-
-    if (userIndex >= 0 && password.split(',')[userIndex] === dto.password) {
+    if (password.split(',')[index] === dto.password) {
       const jwt = await this.createJWT(dto.email);
       return { access_token: jwt };
     }
     throw new BadRequestException('Invalid credentials');
+  }
+
+  findUserByEmail(email: string) {
+    const whiteList = this.configService.get('WHITELIST_AUTH').split(',');
+    const usersAllowed = whiteList.filter((str) => str.includes('@'));
+
+    const userIndex = whiteList.findIndex((user) => user === email);
+    const userIndexForPassword = usersAllowed.findIndex(
+      (user) => user === email,
+    );
+
+    if (userIndexForPassword < 0) {
+      throw new NotFoundException('User not found');
+    }
+
+    const user: UserEntity = {
+      uuid: whiteList[userIndex + 2],
+      role: whiteList[userIndex + 1],
+      email: whiteList[userIndex],
+    };
+
+    return { index: userIndexForPassword, user };
   }
 
   async createJWT(sub: string) {
@@ -50,6 +69,8 @@ export class AuthService {
     if (globalJWT !== token) {
       throw new UnauthorizedException();
     }
-    return !!this.jwtService.verify(token, jwtSecret);
+    const jwtVerified = this.jwtService.verify(token, jwtSecret);
+    const { user } = this.findUserByEmail(jwtVerified.sub);
+    return user;
   }
 }

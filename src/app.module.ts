@@ -11,6 +11,7 @@ import { ResponseDtoInterceptor } from '@commons/interceptors/response-dto.inter
 import { LoggerInterceptor } from '@commons/interceptors/logger.interceptor';
 import { AuthGuard } from '@commons/guards/auth.guard';
 import { BearerTokenGuard } from '@commons/guards/bearer-token.guard';
+import { NotesModule } from './notes/notes.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { BearerTokenGuard } from '@commons/guards/bearer-token.guard';
     }),
     CommonsModule,
     AuthModule,
+    NotesModule,
   ],
   controllers: [AppController],
   providers: [

@@ -4,8 +4,9 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { AuthService } from '@auth/auth.service';
+import { UserEntity } from '@auth/entities/user.entity';
+import { Viitae360Request } from '@commons/types/viitae360-request';
 
 @Injectable()
 export class BearerTokenGuard implements CanActivate {
@@ -16,12 +17,14 @@ export class BearerTokenGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Authorization Header
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<Viitae360Request>();
     const authHeader = request.header('Authorization');
     if (!authHeader) {
       return false;
     }
     const jwt = authHeader.replace('Bearer ', '');
-    return this.authService.verifyJWT(jwt);
+    request.user = this.authService.verifyJWT(jwt);
+
+    return !!request.user;
   }
 }

@@ -4,6 +4,7 @@ import { NoteHttpPostReqDto, NoteHttpPutReqDto } from './dto/note.http.req.dto';
 import { NoteEntity } from './entities/note.entity';
 import { ConfigService } from '@nestjs/config';
 import { UserEntity } from '@auth/entities/user.entity';
+import { HttpClient } from '@commons/utils/http-client';
 
 @Injectable()
 export class NotesService {
@@ -37,6 +38,26 @@ export class NotesService {
     if (!note) {
       throw new NotFoundException('Note not found');
     }
+
+    return note;
+  }
+
+  async enrichNote(id: string) {
+    const note = this.findOne(id);
+
+    const url = this.configService.get('API_ENRICH_URL');
+    const resultEnrich = await HttpClient.fetch(url, { method: 'GET' });
+
+    note.content = `${note.content}\n\n${
+      resultEnrich.content || ''
+    } - ${resultEnrich.author}`;
+
+    this.configService.set(
+      'NOTES',
+      this.configService
+        .get('NOTES')
+        .map((note) => (note.id === id ? note : note)),
+    );
 
     return note;
   }

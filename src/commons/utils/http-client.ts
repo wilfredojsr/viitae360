@@ -4,11 +4,6 @@ export class HttpClient {
     options.headers = options.headers || {};
     options.headers['Content-Type'] = 'application/json';
 
-    const jsession = localStorage.getItem('__jsession');
-    if (jsession) {
-      options.headers['Authorization'] = 'Bearer ' + jsession;
-    }
-
     const response = await fetch(url, options).catch((error) => {
       console.error(error);
       throw error;

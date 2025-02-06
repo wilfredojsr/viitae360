@@ -48,6 +48,12 @@ export class NotesController {
     return this.notesService.findOne(id);
   }
 
+  @Post(':id/enrich')
+  @ResponseDTO(NoteHttpResDto)
+  enrichNote(@Param('id', ParseUUIDPipe) id: string) {
+    return this.notesService.enrichNote(id);
+  }
+
   @Put(':id')
   @ResponseDTO(NoteHttpResDto)
   update(

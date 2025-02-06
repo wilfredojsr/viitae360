@@ -48,9 +48,11 @@ export class NotesService {
     const url = this.configService.get('API_ENRICH_URL');
     const resultEnrich = await HttpClient.fetch(url, { method: 'GET' });
 
-    note.content = `${note.content}\n\n${
-      resultEnrich.content || ''
-    } - ${resultEnrich.author}`;
+    // note.content = `${note.content}\n\n${
+    //   resultEnrich.content || ''
+    // } - ${resultEnrich.author}`;
+
+    note.content = `${note.content}\n\n${resultEnrich.slip?.advice || ''}`;
 
     this.configService.set(
       'NOTES',
